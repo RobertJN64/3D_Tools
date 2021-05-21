@@ -11,12 +11,12 @@ def forceComputeGeometry(regionDB):
 
     unassignedCounter = 0
     for region in regionDB:
-        if region.mode == RefMode.NoneAssigned:
+        if len(region.mode) == 0:
             unassignedCounter += 1
 
     loopedReferenceCounter = 0
     for region in regionDB:
-        if region.mode == RefMode.NeutralDif:
+        if RefMode.NeutralDif in region.mode:
             loopedReferenceCounter += 1
 
     if unassignedCounter > 0:
@@ -30,11 +30,11 @@ def forceComputeGeometry(regionDB):
 
     foundStartingPoint = False
     for region in regionDB:
-        if region.mode == RefMode.Peak:
+        if RefMode.Peak in region.mode:
             print("Found peak, preparing to calc geo.")
             foundStartingPoint = True
             region.forceHeight = True
-            region.currentHeight = 100 #TODO - max h handling
+            region.currentHeight = 40 #TODO - max h handling
             break
 
         if region.forceHeight:
@@ -53,30 +53,33 @@ def forceComputeGeometry(regionDB):
         while madeChangesLastLoop:
             madeChangesLastLoop = False
             for region in regionDB:
-                ref_region = region.ref_region
-                if (not region.forceHeight) and (ref_region is not None) and ref_region.forceHeight:
-                    region.forceHeight = True
-                    if region.mode == RefMode.NegativeDif:
-                        region.currentHeight = ref_region.currentHeight - 5
-                        madeChangesLastLoop = True
-                    elif region.mode == RefMode.PositiveDif:
-                        region.currentHeight = ref_region.currentHeight + 5
-                        madeChangesLastLoop = True
-                    elif region.mode == RefMode.NeutralDif:
-                        print("Error, referencing a region with difference not specified.")
-                    elif region.mode == RefMode.Peak:
-                        print("Error, peak is attempting to reference a region.")
-                    elif region.mode == RefMode.NoneAssigned:
-                        print("Error, referencing a region but no mode specified.")
-                    else:
-                        print("Error, unexpected region code: ", region.mode)
+                for regionCounter in range(0, len(region.ref_region)):
+                    ref_region = region.ref_region[regionCounter]
+                    mode = region.mode[regionCounter]
+
+                    if (not region.forceHeight) and ref_region.forceHeight:
+                        region.forceHeight = True
+                        if mode == RefMode.NegativeDif:
+                            region.currentHeight = ref_region.currentHeight - 5
+                            madeChangesLastLoop = True
+                        elif mode == RefMode.PositiveDif:
+                            region.currentHeight = ref_region.currentHeight + 5
+                            madeChangesLastLoop = True
+                        elif mode == RefMode.NeutralDif:
+                            print("Error, referencing a region with difference not specified.")
+                        elif mode == RefMode.Peak:
+                            print("Error, peak is attempting to reference a region.")
+                        elif mode == RefMode.NoneAssigned:
+                            print("Error, referencing a region but no mode specified.")
+                        else:
+                            print("Error, unexpected region code: ", mode)
         #endregion
         #Attempt to find new starting points
         fullyTerminated = True
         for region in regionDB:
-            if region.mode == RefMode.Peak and not region.forceHeight:
+            if RefMode.Peak in region.mode and not region.forceHeight:
                 region.forceHeight = True
-                region.currentHeight = 100 #TODO - fix double locked h
+                region.currentHeight = 40 #TODO - fix double locked h
                 fullyTerminated = False
                 break
 

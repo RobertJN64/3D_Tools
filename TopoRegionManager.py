@@ -28,8 +28,8 @@ class Region:
     def __init__(self, borders, edge):
         self.borders = borders
         self.edge = edge
-        self.ref_region = None
-        self.mode = RefMode.NoneAssigned
+        self.ref_region = []
+        self.mode = []
         self.forceHeight = False
         self.currentHeight = 0 #doesn't matter because forceHeight
 #endregion classes
@@ -142,7 +142,14 @@ def linearScan(x, y, lgrid, maxdis):
 
     return True, inverseWeightedAverage(distances, heights)
 
-
+def colorificate(grid, regionDB):
+    cregions = []
+    for region in regionDB:
+        if region.edge:
+            cregions.append((0,0,255))
+        else:
+            cregions.append((255,0,0))
+    renderRegions(grid, cregions)
 
 colors = []
 def createColors():
@@ -176,7 +183,7 @@ def process(origgrid, circles, peaks):
     print("\nFound " + str(len(regionDB)) + " regions.")
     #renderRegions(grid)
     #endregion
-    #Lock onto a peak
+    #region Lock onto a peak
     simpleregions = []
     for region in regionDB:
         borders = region.borders
@@ -185,38 +192,40 @@ def process(origgrid, circles, peaks):
             simpleregions.append(region)
 
         if len(borders) == 1 and not region.edge and borders[0] in peaks:
-            region.mode = RefMode.Peak
+            region.mode = [RefMode.Peak]
 
     for i in range(0, len(simpleregions)):
         iregion = simpleregions[i]
         for p in peaks:
             if p in iregion.borders:
-                iregion.ref_region = regionDB[p]
-                iregion.mode = RefMode.NegativeDif #below peak
+                iregion.ref_region = [regionDB[p]]
+                iregion.mode = [RefMode.NegativeDif] #below peak
 
         for j in range(0, len(simpleregions)):
             if i != j:
                 jregion = simpleregions[j]
                 if overlap(jregion.borders, iregion.borders):
-                    if iregion.mode == RefMode.NegativeDif or iregion.mode == RefMode.PositiveDif and jregion.mode == RefMode.NoneAssigned:
-                        jregion.mode = iregion.mode
-                        jregion.ref_region = iregion
+                    if iregion.mode == [RefMode.NegativeDif] or iregion.mode == [RefMode.PositiveDif] and jregion.mode == []:
+                        jregion.mode = [iregion.mode[0]]
+                        jregion.ref_region = [iregion]
 
-                    elif jregion.mode == RefMode.NegativeDif or jregion.mode == RefMode.PositiveDif and iregion.mode == RefMode.NoneAssigned:
-                        iregion.mode = jregion.mode
-                        iregion.ref_region = jregion
+                    elif jregion.mode == [RefMode.NegativeDif] or jregion.mode == [RefMode.PositiveDif] and iregion.mode == []:
+                        iregion.mode = [jregion.mode[0]]
+                        iregion.ref_region = [jregion]
 
-                    elif jregion.mode == RefMode.NoneAssigned and iregion.mode == RefMode.NoneAssigned:
-                        iregion.mode = RefMode.NeutralDif
-                        jregion.mode = RefMode.NeutralDif
-                        iregion.ref_region = jregion
-                        jregion.ref_region = iregion #create circular reference
+                    elif jregion.mode == [] and iregion.mode == []:
+                        iregion.mode = [RefMode.NeutralDif]
+                        jregion.mode = [RefMode.NeutralDif]
+                        iregion.ref_region = [jregion]
+                        jregion.ref_region = [iregion] #create circular reference
 
 
     print(simpleregions)
-    colorificate(grid, regionDB, peaks)
-
+    colorificate(grid, regionDB)
+    #endregion
+    #Compute geometry
     regionINFO = rgc.forceComputeGeometry(regionDB)
+    #region final 3d processing
     print("Matching regions and lines...")
     lineHDB = {}
     for region in regionINFO:
@@ -256,7 +265,7 @@ def process(origgrid, circles, peaks):
             if pix == -1:
                 borders = copy.deepcopy(regionDB[grid[y][x].region].borders)
                 if len(borders) > 1:
-                    valid, num = linearScan(x, y, lgrid, 10)
+                    valid, num = linearScan(x, y, lgrid, 50)
                     if not valid:
                         num = regionINFO[grid[y][x].region].currentHeight
                     mrow.append(num)
@@ -265,48 +274,7 @@ def process(origgrid, circles, peaks):
             else:
                 mrow.append(pix)
         mgrid.append(mrow)
-
+    #endregion
     print()
     return mgrid
-
-
-def colorificate(grid, regionDB, peaks):
-    cregions = []
-    for region in regionDB:
-        if region.edge:
-            cregions.append((0,0,255))
-        else:
-            cregions.append((255,0,0))
-    renderRegions(grid, cregions)
-
-
-    # cregions = []
-    # for region in regionDB:
-    #     borders = region.borders
-    #     if len(borders) == 1 and borders[0] in peaks:
-    #         cregions.append((0,0,255))
-    #     elif len(borders) == 2 and overlap(borders, peaks):
-    #         cregions.append((200,0,0))
-    #     elif overlap(borders, peaks):
-    #         cregions.append((0,200,0))
-    #     else:
-    #         cregions.append((100,100,100))
-    # renderRegions(grid, cregions)
-    #
-    # cregions = []
-    # for region in regionDB:
-    #     borders = region.borders
-    #     if len(borders) == 1 and borders[0] in peaks:
-    #         cregions.append((0, 0, 255)) #peaks are blue
-    #     elif len(borders) == 2:
-    #         cregions.append((200, 100, 0)) #normal regions are orange
-    #     elif len(borders) >= 3:
-    #         cregions.append((200, 0, 0)) #hard regions are red
-    #     elif len(borders) == 1 and borders[0] not in peaks:
-    #         cregions.append((0, 255, 0)) #side regions are green
-    #     else:
-    #         print("ERROR?", borders)
-    #         cregions.append((0, 0, 0)) #error is black
-    #
-    # renderRegions(grid, cregions, click=True)
 
