@@ -1,11 +1,11 @@
-import copy
-
 import RelativeGeoComputer as rgc
+import InteractiveRegionEditor as IntRegEdit
 
 import matplotlib.pyplot as pyplot
 import matplotlib.colors as mcolors
 from PIL import Image
 from sys import stdout
+import copy
 
 #region classes
 class RefMode:
@@ -60,7 +60,7 @@ def floodFill(grid, x, y, regionID):
 
     return borders, isEdge
 
-def renderRegions(grid, c=None, click=False):
+def renderRegions(grid, c=None):
     if c is None:
         c = colors
 
@@ -75,10 +75,6 @@ def renderRegions(grid, c=None, click=False):
             if not pix.isLine:
                 current_img.putpixel((x, y), c[pix.region % len(c)])
     ax.imshow(current_img)
-
-    if click:
-        fig.canvas.mpl_connect('button_press_event', onClick)
-
     pyplot.show()
 
 def overlap(a, b):
@@ -86,10 +82,6 @@ def overlap(a, b):
         if item in b:
             return True
     return False
-
-def onClick(event):
-    if event.xdata is not None and event.ydata is not None:
-        print(event.xdata, event.ydata)
 
 def inverseWeightedAverage(weights, vals):
     m = sum(weights)
@@ -203,8 +195,12 @@ def process(origgrid, circles, peaks):
                     region.ref_region = [regionDB[peak]]
 
         if len(borders) == 1 and region.edge:
-            region.mode = [RefMode.NoDif]
-            region.ref_region = [regionDB[borders[0]]]
+            for conn_region in regionDB:
+                if region != conn_region:
+                    if borders[0] in conn_region.borders:
+                        region.mode = [RefMode.NoDif]
+                        region.ref_region = [conn_region]
+                        print("Edge border linking:", conn_region)
 
     for i in range(0, len(simpleregions)):
         iregion = simpleregions[i]
@@ -231,11 +227,11 @@ def process(origgrid, circles, peaks):
                         iregion.ref_region = [jregion]
                         jregion.ref_region = [iregion] #create circular reference
 
-
-    colorificate(grid, regionDB)
     #endregion
+    #Edit regions
+    finRegionDB = IntRegEdit.edit(grid, regionDB)
     #Compute geometry
-    regionINFO = rgc.forceComputeGeometry(regionDB)
+    regionINFO = rgc.forceComputeGeometry(finRegionDB)
     #region final 3d processing
     print("Matching regions and lines...")
     lineHDB = {}

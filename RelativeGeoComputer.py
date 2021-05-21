@@ -40,7 +40,7 @@ def forceComputeGeometry(regionDB):
             print("Found peak, preparing to calc geo.")
             foundStartingPoint = True
             region.forceHeight = True
-            region.currentHeight = 40 #TODO - max h handling
+            region.currentHeight = 50 #TODO - max h handling
             break
 
     if not foundStartingPoint:
@@ -118,7 +118,7 @@ def forceComputeGeometry(regionDB):
             if RefMode.Peak in region.mode and not region.forceHeight:
                 print("Geometry not fully constrained. Peak relative height may be wrong.")
                 region.forceHeight = True
-                region.currentHeight = 40 #TODO - fix double locked h
+                region.currentHeight = 50 #TODO - fix double locked h
                 fullyTerminated = False
                 break
 
