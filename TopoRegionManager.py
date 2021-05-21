@@ -33,7 +33,6 @@ class Region:
         self.forceHeight = False
         self.currentHeight = 0 #doesn't matter because forceHeight
 #endregion classes
-
 #region Helper Funcs
 def floodFill(grid, x, y, regionID):
     borders = []
@@ -106,9 +105,9 @@ def linearScan(x, y, lgrid, maxdis):
     for xpos in range(x, min(x + maxdis, len(row))):
         pix = row[xpos]
         if pix != -1:
-            pointInfo.append([pix, xpos-x]) #height, distance
+            pointInfo.append([pix, xpos - x]) #height, distance
             break
-    for xpos in range(x, max(x - maxdis,0) -1):
+    for xpos in range(x, max(x - maxdis,0), -1):
         pix = row[xpos]
         if pix != -1:
             pointInfo.append([pix, x - xpos])  # height, distance
@@ -118,7 +117,7 @@ def linearScan(x, y, lgrid, maxdis):
         if pix != -1:
             pointInfo.append([pix, ypos - y]) #height, distance
             break
-    for ypos in range(y, max(y - maxdis, 0) -1):
+    for ypos in range(y, max(y - maxdis, 0), -1):
         pix = lgrid[ypos][x]
         if pix != -1:
             pointInfo.append([pix, y - ypos]) #height, distance
@@ -130,12 +129,8 @@ def linearScan(x, y, lgrid, maxdis):
     distances = []
     heights = []
     for pInfo in pointInfo:
-        if pInfo[0] in heights:
-            index = heights.index(pInfo[0])
-            distances[index] = min(distances[index], pInfo[1])
-        else:
-            heights.append(pInfo[0])
-            distances.append(pInfo[1])
+        heights.append(pInfo[0])
+        distances.append(pInfo[1])
 
     if max(heights) == min(heights):
         return True, heights[0]
@@ -162,7 +157,6 @@ createColors()
 def process(origgrid, circles, peaks):
     regionDB = []
     grid = []
-
     #region Data Converts
     print("Converting data types...")
     for row in origgrid:

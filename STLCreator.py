@@ -81,6 +81,6 @@ def stlFromMesh(data, fname):
             shape.vectors[i][j] = f[j]
 
     shape.save(fname + ".stl")
-    print("STL Created.")
+    print("\nSTL Created.")
 
 
