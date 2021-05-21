@@ -14,6 +14,7 @@ class RefMode:
     NeutralDif = 1
     NegativeDif = 2
     PositiveDif = 3
+    NoDif = 4 #handle edges easyily because lazy
 
 class Tile:
     def __init__(self, num, peaks, circles):
@@ -140,10 +141,18 @@ def linearScan(x, y, lgrid, maxdis):
 def colorificate(grid, regionDB):
     cregions = []
     for region in regionDB:
-        if region.edge:
-            cregions.append((0,0,255))
+        if region.mode == [RefMode.Peak]:
+            cregions.append((0, 0, 255))
+        elif region.mode == [RefMode.PositiveDif] or region.mode == [RefMode.NegativeDif]:
+            cregions.append((255, 0, 0))
+        elif len(region.mode) == 0:
+            cregions.append((200, 200, 200))
+        elif region.mode == [RefMode.NoDif]:
+            cregions.append((255, 128, 0))
+        elif region.mode == [RefMode.NeutralDif]:
+            cregions.append((0, 255, 0))
         else:
-            cregions.append((255,0,0))
+            print("Error colorizing mode: ", region.mode)
     renderRegions(grid, cregions)
 
 colors = []
@@ -182,11 +191,20 @@ def process(origgrid, circles, peaks):
     for region in regionDB:
         borders = region.borders
         if len(borders) == 2 and not region.edge:
-            print("HANDLING CIRCLE:", borders[0], " & ", borders[1])
             simpleregions.append(region)
 
         if len(borders) == 1 and not region.edge and borders[0] in peaks:
             region.mode = [RefMode.Peak]
+
+        else:
+            for peak in peaks:
+                if peak in borders:
+                    region.mode = [RefMode.NegativeDif]
+                    region.ref_region = [regionDB[peak]]
+
+        if len(borders) == 1 and region.edge:
+            region.mode = [RefMode.NoDif]
+            region.ref_region = [regionDB[borders[0]]]
 
     for i in range(0, len(simpleregions)):
         iregion = simpleregions[i]
@@ -214,7 +232,6 @@ def process(origgrid, circles, peaks):
                         jregion.ref_region = [iregion] #create circular reference
 
 
-    print(simpleregions)
     colorificate(grid, regionDB)
     #endregion
     #Compute geometry
