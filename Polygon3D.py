@@ -25,18 +25,18 @@ def graph(data, override_h = 1):
                         (x + 1, y, data[y][x + 1]),
                         (x + 0.5, y + 0.5, mpoint)]
             polygons.append(vertices)
-            vertices = [(x, y, data[y][x]),
-                        (x, y + 1, data[y+1][x]),
-                        (x + 0.5, y + 0.5, mpoint)]
-            #polygons.append(vertices)
-            vertices = [(x + 1, y, data[y][x + 1]),
-                        (x + 1, y + 1, data[y + 1][x + 1]),
-                        (x + 0.5, y + 0.5, mpoint)]
-            #polygons.append(vertices)
-            vertices = [(x, y + 1, data[y + 1][x]),
-                        (x + 1, y + 1, data[y + 1][x + 1]),
-                        (x + 0.5, y + 0.5, mpoint)]
-            #polygons.append(vertices)
+            # vertices = [(x, y, data[y][x]),
+            #             (x, y + 1, data[y+1][x]),
+            #             (x + 0.5, y + 0.5, mpoint)]
+            # #polygons.append(vertices)
+            # vertices = [(x + 1, y, data[y][x + 1]),
+            #             (x + 1, y + 1, data[y + 1][x + 1]),
+            #             (x + 0.5, y + 0.5, mpoint)]
+            # #polygons.append(vertices)
+            # vertices = [(x, y + 1, data[y + 1][x]),
+            #             (x + 1, y + 1, data[y + 1][x + 1]),
+            #             (x + 0.5, y + 0.5, mpoint)]
+            # #polygons.append(vertices)
             for i in range(0, 4):
                 hs.append(mpoint)
 

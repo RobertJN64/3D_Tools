@@ -49,7 +49,7 @@ def listscan(fname, interval):
     maxx = int(max(xvals))
     maxy = int(max(yvals))
 
-    dps = []
+    dps: list = []
     for y in range(0, maxy+1):
         mlist = []
         for x in range(0, maxx+1):

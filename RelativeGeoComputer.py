@@ -118,7 +118,7 @@ def forceComputeGeometry(regionDB):
             if RefMode.Peak in region.mode and not region.forceHeight:
                 print("Geometry not fully constrained. Peak relative height may be wrong.")
                 region.forceHeight = True
-                region.currentHeight = 50 #TODO - fix double locked h
+                region.currentHeight = 50
                 fullyTerminated = False
                 break
 

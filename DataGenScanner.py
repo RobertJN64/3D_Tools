@@ -30,7 +30,7 @@ def scan(fname):
         if point[1] > maxy:
             maxy = point[1]
 
-    outpoints = []
+    outpoints: list = []
     for i in range(0, maxy+1):
         mlist = []
         for j in range(0, maxx+1):
